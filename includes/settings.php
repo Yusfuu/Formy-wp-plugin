@@ -1,81 +1,185 @@
-
 <?php
 global $wpdb;
-$myform = $wpdb->get_row("SELECT * FROM wp_formy_fields WHERE id = 1;");
+$formy = $wpdb->get_row("SELECT * FROM wp_formy_fields WHERE id = 1;");
 
-
-?>
-
-<?php
-if (isset($_POST['submit'])) {
-  global $wpdb;
+if (isset($_POST['formy_save'])) {
   $wpdb->update(
     'wp_formy_fields',
     [
-      'firstName' => $_POST['firstName'] ?? 'off',
-      'lastName' => $_POST['lastName'] ?? 'off',
-      'email' => $_POST['email'] ?? 'off',
-      'password' => $_POST['password'] ?? 'off'
+      'firstName' => $_POST['firstName'] ? true : false,
+      'lastName' => $_POST['lastName'] ? true : false,
+      'email' => $_POST['email'] ? true : false,
+      'password' => $_POST['password'] ? true : false,
+      'confirmPassword' => $_POST['confirmPassword'] ? true : false,
+      'subject' => $_POST['subject'] ? true : false,
+      'message' => $_POST['message'] ? true : false,
     ],
     ['id' => 1]
   );
 }
 
-
 ?>
+
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<style>
+  .collection-item {
+    font-size: 16px;
+  }
+</style>
+
 <div class="wrap">
-
-  <h1>Formy Plugin</h1>
   <form method="post" action="">
-    <div>
-      <input type="checkbox" <?php echo $myform->firstName=="on" ?  'checked' :  '';  ?>  name="firstName">
-      <input type="text" placeholder="First Name" />
-    </div>
-    <div>
-      <input type="checkbox" <?php echo $myform->lastName=="on" ?  'checked' :  '';  ?> name="lastName">
-      <input type="text" placeholder="Last Name" />
-    </div>
-    <div>
-      <input type="checkbox" <?php echo $myform->email=="on" ?  'checked' :  '';  ?> name="email">
-      <input type="email" placeholder="email" />
-    </div>
+    <ul class="collection with-header">
+      <li class="collection-header">
+        <h4>Formy Plugin</h4>
+      </li>
+      <li class="collection-item">
+        <div>First name
+          <label class="secondary-content">
+            <div class="switch">
+              <label>
+                <input type="checkbox" name="firstName" class="filled-in" <?= $formy->firstName ? 'checked' : ''; ?> />
+                <span class="lever"></span>
+              </label>
+            </div>
+          </label>
+        </div>
+      </li>
 
-    <div>
-      <input type="checkbox" <?php echo $myform->password=="on" ?  'checked' :  '';  ?> name="password">
-      <input type="password" placeholder="password" />
-    </div>
-    <!-- <input type="email" name="email" /> -->
-    <input type="submit" name="submit" />
+      <li class="collection-item">
+        <div>Last name
+          <label class="secondary-content">
+            <div class="switch">
+              <label>
+                <input type="checkbox" name="lastName" class="filled-in" <?= $formy->lastName ? 'checked' : ''; ?> />
+                <span class="lever"></span>
+              </label>
+            </div>
+          </label>
+        </div>
+      </li>
+
+      <li class="collection-item">
+        <div>Email address
+          <label class="secondary-content">
+            <div class="switch">
+              <label>
+                <input type="checkbox" name="email" class="filled-in" <?= $formy->email ? 'checked' : ''; ?> />
+                <span class="lever"></span>
+              </label>
+            </div>
+          </label>
+        </div>
+      </li>
+
+
+      <li class="collection-item">
+        <div>Password
+          <label class="secondary-content">
+            <div class="switch">
+              <label>
+                <input type="checkbox" name="password" class="filled-in" <?= $formy->password ? 'checked' : ''; ?> />
+                <span class="lever"></span>
+              </label>
+            </div>
+          </label>
+        </div>
+      </li>
+
+
+      <li class="collection-item">
+        <div>Confirm Password
+          <label class="secondary-content">
+            <div class="switch">
+              <label>
+                <input type="checkbox" name="confirmPassword" class="filled-in" <?= $formy->confirmPassword ? 'checked' : ''; ?> />
+                <span class="lever"></span>
+              </label>
+            </div>
+          </label>
+        </div>
+      </li>
+
+
+      <li class="collection-item">
+        <div>Subject
+          <label class="secondary-content">
+            <div class="switch">
+              <label>
+                <input type="checkbox" name="subject" class="filled-in" <?= $formy->subject ? 'checked' : ''; ?> />
+                <span class="lever"></span>
+              </label>
+            </div>
+          </label>
+        </div>
+      </li>
+
+
+      <li class="collection-item">
+        <div>Message
+          <label class="secondary-content">
+            <div class="switch">
+              <label>
+                <input type="checkbox" name="message" class="filled-in" <?= $formy->message ? 'checked' : ''; ?> />
+                <span class="lever"></span>
+              </label>
+            </div>
+          </label>
+        </div>
+      </li>
+
+    </ul>
+
+    <input id="formySubmit" class="btn" type="submit" name="formy_save" value="Save changes" />
+    <a id="formyCopy" class="btn modal-trigger" href="#modal1"><i class="material-icons left">content_copy</i>Copy</a>
+
   </form>
 </div>
 
+
+<div id="modal1" class="modal">
+  <div class="modal-content">
+    <h4>Formy Plugin</h4>
+    <p>Shortcode is Copied !</p>
+  </div>
+</div>
+
+
 <script>
+  document.addEventListener('DOMContentLoaded', function() {
 
-let chicky = document.querySelectorAll('input[type=checkbox]');
+    var elems = document.querySelectorAll('.modal');
+    var instances = M.Modal.init(elems, {
+      opacity: 0.5
+    });
 
+    //?Hola
+    document.querySelector('#formyCopy').addEventListener('click', async () => {
+      await navigator.clipboard.writeText('[formy]');
+    });
 
-chicky.forEach(element => {
-  element.addEventListener('change',()=>{
-  if (ischecked()) {
-  document.querySelector('input[type=submit]').removeAttribute('disabled');
-}else{
-  document.querySelector('input[type=submit]').setAttribute('disabled',true);
+    const chicky = document.querySelectorAll('input[type=checkbox]');
+    const formySubmit = document.querySelector('#formySubmit');
 
-}
-});
-});
+    function ischecked() {
+      return [...chicky].some(e => e.checked);
+    }
 
+    chicky.forEach(element => {
+      element.addEventListener('change', () => {
+        ischecked() ? (formySubmit.removeAttribute('disabled'), formySubmit.classList.remove('disabled')) : formySubmit.setAttribute('disabled', true)
+      });
+    });
 
-function ischecked() {
-  return [...chicky].some(e=>e.checked);
-}
+    if (!ischecked()) {
+      formySubmit.setAttribute('disabled', true);
+      formySubmit.classList.add('disabled');
+    }
 
-if (!ischecked()) {
-  document.querySelector('input[type=submit]').setAttribute('disabled',true);
-}
-
-
-
+  });
 </script>
-
-

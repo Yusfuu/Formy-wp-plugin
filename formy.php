@@ -12,71 +12,68 @@
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  */
+if (isset($_POST['formy_save']) || isset($_POST['delete'])) {
+  header("location: " . $_SERVER['REQUEST_URI']);
+}
 
-
-add_action('admin_menu', 'admin_menu');
 
 function admin_menu()
 {
+  global $wpdb;
   add_menu_page('Formy', 'Formy', 'manage_options', 'my-menu', 'settings_page', 'dashicons-align-center');
-  add_submenu_page('my-menu', 'all form', 'all form', 'manage_options', 'my-menu');
-  add_submenu_page('my-menu', 'Add new', 'Add new', 'manage_options', 'my-menu2');
-  add_submenu_page('my-menu', 'Add new', 'Add new', 'manage_options', 'my-menu2');
-}
-
-if (isset($_POST['submit'])) {
-    header("location: " . $_SERVER['REQUEST_URI']);
+  add_submenu_page('my-menu', 'all form', 'Custom Form', 'manage_options', 'my-menu');
+  add_submenu_page('my-menu', 'Add new', sprintf('inbox <span class="awaiting-mod">%d</span>', $wpdb->get_row("SELECT count(*) as balina FROM wp_formy_values")->balina), 'manage_options', 'my-menu2', 'inbox');
 }
 
 function settings_page()
 {
-
-  return include('includes/settings.php');
+  include('includes/settings.php');
 }
 
-add_shortcode('falcon', 'wporg_shortcode');
+function inbox()
+{
+  include('includes/inbox.php');
+}
+
 function wporg_shortcode($atts = [], $content = null)
 {
-  return include_once('app.php');
+  include_once('app.php');
 }
 
-
-
-function createtable()
+function createTableFields()
 {
-    global $wpdb;
-    $sql = "CREATE TABLE wp_formy_fields (
+  $sql = "CREATE TABLE wp_formy_fields (
       id INT,
-      firstName VARCHAR(5),
-      lastName VARCHAR(5),
-      email VARCHAR(5),
-      password VARCHAR(5)
+      firstName BOOLEAN,
+      lastName BOOLEAN,
+      email BOOLEAN,
+      password BOOLEAN,
+      confirmPassword BOOLEAN,
+      subject BOOLEAN,
+      message BOOLEAN
       )";
 
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    maybe_create_table('wp_formy_fields', $sql);
+  require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+  maybe_create_table('wp_formy_fields', $sql);
 }
 
-
-
-function createtableValues()
+function createTableValues()
 {
-    global $wpdb;
-    $sql = "CREATE TABLE wp_formy_values (
+  $sql = "CREATE TABLE wp_formy_values (
       id INT PRIMARY KEY AUTO_INCREMENT,
       firstName VARCHAR(255) DEFAULT NULL,
       lastName VARCHAR(255) DEFAULT NULL,
       email VARCHAR(255) DEFAULT NULL,
-      password VARCHAR(255) DEFAULT NULL
+      password VARCHAR(255) DEFAULT NULL,
+      subject VARCHAR(255) DEFAULT NULL,
+      message TEXT DEFAULT NULL
       )";
 
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    maybe_create_table('wp_formy_values', $sql);
+  require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+  maybe_create_table('wp_formy_values', $sql);
 }
 
-
-
- function insert()
+function installData()
 {
   global $wpdb;
 
@@ -84,14 +81,28 @@ function createtableValues()
     'wp_formy_fields',
     [
       'id' => 1,
-      'firstName' => 'off',
-      'lastName' => 'off',
-      'email' => 'off',
-      'password' => 'off'
+      'firstName' => false,
+      'lastName' => false,
+      'email' => false,
+      'password' => false,
+      'confirmPassword' => false,
+      'subject' => false,
+      'message' => false
     ]
   );
 }
 
-register_activation_hook(__FILE__, 'createtable');
-register_activation_hook(__FILE__, 'insert');
-register_activation_hook(__FILE__, 'createtableValues');
+function dropTableFields()
+{
+  global $wpdb;
+  $wpdb->query("DELETE FROM wp_formy_fields");
+}
+
+
+add_action('admin_menu', 'admin_menu');
+add_shortcode('formy', 'wporg_shortcode');
+
+register_activation_hook(__FILE__, 'createTableFields');
+register_deactivation_hook(__FILE__, 'dropTableFields');
+register_activation_hook(__FILE__, 'installData');
+register_activation_hook(__FILE__, 'createTableValues');
